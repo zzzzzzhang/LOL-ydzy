@@ -1,58 +1,10 @@
-
 # coding: utf-8
 
-import re
-import requests
 import random
+import re
 import copy
+import pandas as pd
 import matplotlib.pyplot as plt
-
-def getHtmlText(url,timeout = 5):
-    try:
-        r = requests.get(
-                         url= url, 
-                         timeout = timeout, 
-                         headers = {'User-Agent': \
-                                    'Mozilla/5.0 (Windows NT 6.1; WOW64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/31.0.1623.0 Safari/537.36'}
-                         )
-        r.encoding = r.apparent_encoding
-        r.raise_for_status()
-    except:
-        print('英雄信息获取失败！ status_code：' + r.status_code)
-    else:
-        print('英雄信息获取成功！')
-#         print(r.request.headers)
-        return r.text
-
-def getHerosInfo():
-    url = 'http://lol.duowan.com/s/ydzySimulator.js?callback=ydzySimulator&_=1569139616375'
-    htmlText = getHtmlText(url)
-    heros_info = re.findall(r'"tip": "(.+)"',htmlText)
-
-    heros_info = re.findall(r'"color": "(.+)",\r\n          "name": "(.+)",\r\n          "tip": "(.+)",\r\n',htmlText)
-
-    heros_info, heros_info_short = transform(heros_info)
-    return heros_info, heros_info_short
-
-def transform(s_matched):
-    '''
-    提取爬取的英雄信息
-    '''
-    heroinfo_short = {}
-    heroinfo_all = {
-                    'hero_id':[],
-                    'name':[],
-                    'gold':[],
-                    'info':[]
-                    }
-    for i, s in enumerate(s_matched):
-        heroinfo_all['hero_id'].append(i)
-        for name in re.split('[ ,]',s[1]):
-            heroinfo_short[name] = i
-        heroinfo_all['name'].append(re.split('[ ,]',s[1])[1])
-        heroinfo_all['gold'].append(color_gold[s[0]])
-        heroinfo_all['info'].append(s[2].split()[-1].split('/'))
-    return heroinfo_all, heroinfo_short
 
 jiBan = {
          '龙':[2],
@@ -80,14 +32,6 @@ jiBan = {
          '换形师':[3,6],
          '法师':[3,6]
          }
-
-color_gold = {
-              'white':1,
-              'green':2,
-              'blue':3,
-              'purple':4,
-              'gold':5
-              }
 
 def getHeroid(names, heros_info_short):
     '''
@@ -267,10 +211,19 @@ def GA(team_pnum, selected_ids, heros_info, heros_info_short,gens = 100, sample 
     return besTeam, maxscores
 
 def main():
-    heros_info, heros_info_short = getHerosInfo()
+    #读取英雄信息
+    heros_inf = pd.read_csv('heros_info.csv')
+    heros_info = {col:heros_inf[col].tolist() for col in heros_inf.columns if col != 'info'}
+    heros_info['info'] = []
+    for i in range(len(heros_inf['info'])):
+        heros_info['info'].append(re.findall(r'([\u4e00-\u9fa5]+)', heros_inf['info'][i]))
+    heros_info_short = pd.read_csv('heros_info_short.csv')
+    heros_info_short = {name:heros_info_short['hero_id'][i] for i, name in enumerate(heros_info_short['name'])}
+    
+    #计算
     gens = 50
-    besTeam, maxscores = GA(team_pnum= 8, 
-                            selected_ids = ['盖伦','奥巴马','凯尔'], 
+    besTeam, maxscores = GA(team_pnum= 9, 
+                            selected_ids = ['盖伦','菲奥娜'], 
                             heros_info=heros_info,
                             heros_info_short= heros_info_short, 
                             gens = gens, 
