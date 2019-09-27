@@ -254,7 +254,4 @@ def main(heros_list= [], team_pnum= 8, gens = 100, sample = 50):
 
 
 if __name__ == '__main__':
-	while(1):
-		print('输入确定使用的英雄（空格隔开，不超过8）:\n')
-		heros_list = input().split(' ')
-		main(heros_list= heros_list, team_pnum= 8, gens = 1000, sample = 100)
+    main(heros_list= ['纳尔', '艾希', '豹女'], team_pnum= 8, gens = 200, sample = 100)
