@@ -1,4 +1,3 @@
-
 # coding: utf-8
 
 import random
@@ -33,6 +32,9 @@ jiBan = {
          '换形师':[3,6],
          '法师':[3,6]
          }
+
+shovel_add = ['剑士','极地','恶魔','约德尔人','刺客','骑士','法师']
+
 
 def getHeroid(names, heros_info_short):
     '''
@@ -70,34 +72,63 @@ def teamtype(hero_ids, heros_info):
                 team[job] = 1
     return team, gold
 
-def calculateTeamScore(team, show= 0):
+def calc(team, show= 0):
     '''
     计算队伍得分
-    羁绊得分规则：按达成羁绊人数得分，不考虑羁绊效果不平衡（这是运营商的事=-=）
+    羁绊得分规则：按达成羁绊人数得分，不考虑羁绊效果不平衡（这是运营商的事!）
     '''
     score = 0
     for k in team:
-        flag = 0#记录达成几人口羁绊
-        if k != '忍者':
-            pnum = team[k]
-            for n in jiBan[k]:
-                if pnum >= n:
-                    flag = n
-                else:
-                    break
-            #组成人口越多，得分越高
-            score += flag**2
-            if pnum >= jiBan[k][0] and show:
-                print('达成{}{}'.format(flag,k))
-        elif team[k] == 1 or team[k] == 4:
-            score += team[k]
-            if show:
-                print('达成{}{}'.format(team[k],k))
-        else:
-            continue
+            flag = 0#记录达成几人口羁绊
+            if k != '忍者':
+                pnum = team[k]
+                for n in jiBan[k]:
+                    if pnum >= n:
+                        flag = n
+                    else:
+                        break
+                #组成人口越多，得分越高
+                score += flag**2
+                if pnum >= jiBan[k][0] and show:
+                    print('达成{}{}'.format(flag,k))
+            elif team[k] == 1 or team[k] == 4:
+                score += team[k]
+                if show:
+                    print('达成{}{}'.format(team[k],k))
+            else:
+                continue
     return score
 
-def GA(team_pnum, selected_ids, heros_info, heros_info_short,gens = 100, sample = 50, alpha = 0.5):
+def calculateTeamScore(team, show= 0, shovel= False):
+    '''
+    计算队伍得分(铲子)
+    羁绊得分规则：按达成羁绊人数得分，不考虑羁绊效果不平衡（这是运营商的事!）
+    '''
+    max_score = 0
+    if shovel:
+    #计算铲子
+        change = 'null'
+        team_out = {}
+        for j in shovel_add:
+            #如果队伍里没有相关职业,跳过（铲子没有单独羁绊）
+            if j not in team.keys():
+                continue
+            team_copy = copy.deepcopy(team)
+            team_copy[j] +=1
+            
+            score = calc(team= team_copy, show= 0)
+            change = change if score <= max_score else j
+            team_out = team_out if score <= max_score else copy.deepcopy(team_copy)
+            
+            max_score = max_score if score <= max_score else score
+        
+        calc(team= team_out, show= show)
+        return max_score, change
+    else:
+        max_score = calc(team= team, show= show)
+        return max_score, None
+
+def GA(team_pnum, selected_ids, heros_info, heros_info_short,gens = 100, sample = 50, alpha = 0.5, shovel= False):
     '''
     team_pnum:你想组成多少人队伍
     selected_ids:列表,已经选定哪些英雄
@@ -127,7 +158,7 @@ def GA(team_pnum, selected_ids, heros_info, heros_info_short,gens = 100, sample 
         random.shuffle(hero_thisGenCouldChose)
         teamChoesd =  selected_ids + hero_thisGenCouldChose[:n]
         team, gold = teamtype(teamChoesd, hero_info_cp)
-        score = calculateTeamScore(team)
+        score,change = calculateTeamScore(team,shovel= shovel)
 #         print('<================================>')
         score = score * 10 - gold * alpha if score > 0 else 0
         scores['chosed_ids'].append(teamChoesd)
@@ -156,7 +187,7 @@ def GA(team_pnum, selected_ids, heros_info, heros_info_short,gens = 100, sample 
             scores_thisgen['chosed_ids'].append(teamChoesd)
             #计算得分
             team, gold = teamtype(teamChoesd, hero_info_cp)
-            score = calculateTeamScore(team)
+            score,change = calculateTeamScore(team, shovel= shovel)
             score = score * 10 - gold * alpha if score > 0 else 0
             scores['score'][score_min_idx] = score
             scores_thisgen['score'].append(score)
@@ -196,7 +227,7 @@ def GA(team_pnum, selected_ids, heros_info, heros_info_short,gens = 100, sample 
             baby = selected_ids + dadmon[:n]
             #求得分
             team, gold = teamtype(baby, hero_info_cp)
-            score = calculateTeamScore(team)
+            score,change = calculateTeamScore(team, shovel= shovel)
             score = score * 10 - gold * alpha if score > 0 else 0
             scores_thisgen['chosed_ids'].append(baby)
             scores_thisgen['score'].append(score)
@@ -211,8 +242,7 @@ def GA(team_pnum, selected_ids, heros_info, heros_info_short,gens = 100, sample 
     
     return besTeam, maxscores
 
-
-def main(heros_list= [], team_pnum= 8, gens = 100, sample = 50):
+def main(heros_list= [], team_pnum= 8, shovel = False, gens = 100, sample = 50):
     '''
     hero_list: 你确定选的英雄
     team_pnum: 人口数
@@ -235,14 +265,16 @@ def main(heros_list= [], team_pnum= 8, gens = 100, sample = 50):
                             heros_info_short= heros_info_short, 
                             gens = gens, 
                             sample = 50, 
-                            alpha = 0.1)
+                            alpha = 0.1,
+                            shovel = shovel)
 
     team, gold = teamtype(besTeam, heros_info= heros_info)
     print(team)
+    teamScore, change = calculateTeamScore(team= team, show = 1, shovel= shovel)
+#     print(teamScore)
+    print('铲子变个{}'.format(change))
     heros = getHeroFromid(besTeam, heros_info= heros_info)
     print(heros)
-    teamScore = calculateTeamScore(team= team, show = 1)
-    print(teamScore)
     
     plt.plot(list(range(gens)), maxscores, 'k.')
     plt.rcParams['font.sans-serif']=['SimHei']
@@ -252,6 +284,6 @@ def main(heros_list= [], team_pnum= 8, gens = 100, sample = 50):
     plt.title('人工智障助手-云顶之弈', fontsize = 20, pad= 10)
     plt.show()
 
-
 if __name__ == '__main__':
-    main(heros_list= ['纳尔', '艾希', '豹女'], team_pnum= 8, gens = 200, sample = 100)
+    main(heros_list= [ '德莱文', '普朗克', '慎'], team_pnum= 8, shovel = True, gens = 500, sample = 100)
+
