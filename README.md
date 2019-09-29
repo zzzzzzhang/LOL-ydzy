@@ -20,6 +20,10 @@
 ---
 大概5s之内运行完,不会耽误游戏时间
 
+---
+### 2019/9/29 适配9.19版本
+增加铲子凑羁绊功能
+
 优化结果如下
 cmd：
 ![ori](https://raw.githubusercontent.com/zzzzzzhang/LOL-ydzy/master/figure/figure_cmd.png)
