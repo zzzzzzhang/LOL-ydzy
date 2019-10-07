@@ -4,7 +4,7 @@ import random
 import re
 import copy
 import pandas as pd
-import matplotlib.pyplot as plt
+#import matplotlib.pyplot as plt
 
 jiBan = {
          '龙':[2],
@@ -19,7 +19,7 @@ jiBan = {
          '恶魔':[2,4,6],
          '浪人':[1],
          '机器人':[1],
-         '约德尔人':[3,6],
+         '约德尔人':[3,6,9],
          '海克斯科技':[2,4],
          '枪手':[2,4],
          '刺客':[3,6,9],
@@ -30,7 +30,7 @@ jiBan = {
          '游侠':[2,4],
          '元素使':[3],
          '换形师':[3,6],
-         '法师':[3,6]
+         '法师':[3,6,9]
          }
 
 shovel_add = ['剑士','极地','恶魔','约德尔人','刺客','骑士','法师']
@@ -160,7 +160,7 @@ def GA(team_pnum, selected_ids, heros_info, heros_info_short,gens = 100, sample 
         team, gold = teamtype(teamChoesd, hero_info_cp)
         score,change = calculateTeamScore(team,shovel= shovel)
 #         print('<================================>')
-        score = score * 10 - gold * alpha if score > 0 else 0
+        score = score * 10 + gold * alpha if score > 0 else 0
         scores['chosed_ids'].append(teamChoesd)
         scores['score'].append(score)
 
@@ -188,7 +188,7 @@ def GA(team_pnum, selected_ids, heros_info, heros_info_short,gens = 100, sample 
             #计算得分
             team, gold = teamtype(teamChoesd, hero_info_cp)
             score,change = calculateTeamScore(team, shovel= shovel)
-            score = score * 10 - gold * alpha if score > 0 else 0
+            score = score * 10 + gold * alpha if score > 0 else 0
             scores['score'][score_min_idx] = score
             scores_thisgen['score'].append(score)
         
@@ -228,7 +228,7 @@ def GA(team_pnum, selected_ids, heros_info, heros_info_short,gens = 100, sample 
             #求得分
             team, gold = teamtype(baby, hero_info_cp)
             score,change = calculateTeamScore(team, shovel= shovel)
-            score = score * 10 - gold * alpha if score > 0 else 0
+            score = score * 10 + gold * alpha if score > 0 else 0
             scores_thisgen['chosed_ids'].append(baby)
             scores_thisgen['score'].append(score)
         
