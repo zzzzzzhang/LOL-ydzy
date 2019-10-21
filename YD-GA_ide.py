@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 jiBan = {
          '龙':[2],
-         '虚空':[3],
+         '虚空':[2,4],
          '帝国':[2,4],
          '贵族':[3,6],
          '忍者':[1,4],
@@ -259,12 +259,12 @@ def main(heros_list= [], team_pnum= 8, shovel = False, gens = 100, sample = 50):
     heros_info_short = {name:heros_info_short['hero_id'][i] for i, name in enumerate(heros_info_short['name'])}
     
     #计算
-    besTeam, maxscores = GA(team_pnum= 8, 
+    besTeam, maxscores = GA(team_pnum= team_pnum, 
                             selected_ids = heros_list, 
                             heros_info=heros_info,
                             heros_info_short= heros_info_short, 
                             gens = gens, 
-                            sample = 50, 
+                            sample = sample, 
                             alpha = 0.1,
                             shovel = shovel)
 
@@ -272,7 +272,8 @@ def main(heros_list= [], team_pnum= 8, shovel = False, gens = 100, sample = 50):
     print(team)
     teamScore, change = calculateTeamScore(team= team, show = 1, shovel= shovel)
 #     print(teamScore)
-    print('铲子变个{}'.format(change))
+	if shovel:
+		print('铲子变个{}'.format(change))
     heros = getHeroFromid(besTeam, heros_info= heros_info)
     print(heros)
     
