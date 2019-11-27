@@ -50,9 +50,8 @@ def transform(s_matched):
 def getHerosInfo():
     url = 'http://lol.duowan.com/s/ydzySimulator.js?callback=ydzySimulator&_=1569139616375'
     htmlText = getHtmlText(url)
-    heros_info = re.findall(r'"tip": "(.+)"',htmlText)
 
-    heros_info = re.findall(r'"color": "(.+)",\r\n          "name": "(.+)",\r\n          "tip": "(.+)",\r\n',htmlText)
+    heros_info = re.findall(r'"color": "(.+)",\r\n\t\t\t\t"name": "(.+)",\r\n\t\t\t\t"tip": "(.+)",\r\n',htmlText)
 
     heros_info, heros_info_short = transform(heros_info)
     return heros_info, heros_info_short
